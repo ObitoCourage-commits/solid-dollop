@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+      body, html { margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background-color: #121212; color: white; font-family: Arial, sans-serif; }
+      #game-container { text-align: center; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+      <div id="game"></div>
+    </div>
+    <script>
+      const BIOS = "https://raw.githubusercontent.com/ObitoCourage-commits/html/main/nds%20bios/";
+
+      EJS_player = "#game";
+      EJS_core = "nds";
+      EJS_gameName = "Monster Jam";
+      EJS_color = "#0064ff";
+      EJS_startOnLoaded = true;
+      EJS_pathtodata = "https://cdn.jsdelivr.net/gh/genizy/emu@master/";
+      EJS_gameUrl = "https://archive.org/download/monster-jam-usa/Monster%20Jam%20%28USA%29.nds";
+      EJS_biosUrl = BIOS + "biosnds7.rom";
+      EJS_bios7Url = BIOS + "biosnds7.rom";
+      EJS_bios9Url = BIOS + "biosnds9.rom";
+      EJS_firmwareUrl = BIOS + "firmware.bin";
+
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/gh/genizy/emu@master/loader.js";
+      document.body.appendChild(script);
+    </script>
+</body>
+</html>
