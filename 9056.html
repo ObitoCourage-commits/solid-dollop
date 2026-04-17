@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>History Review Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0c1a;
+    --surface: #1a1729;
+    --surface2: #221f35;
+    --border: rgba(255,255,255,0.08);
+    --accent: #9b7fe8;
+    --accent-light: #c4adf6;
+    --accent-glow: rgba(155,127,232,0.25);
+    --green: #4cdf8a;
+    --green-bg: rgba(76,223,138,0.12);
+    --green-border: rgba(76,223,138,0.35);
+    --red: #f06b6b;
+    --red-bg: rgba(240,107,107,0.12);
+    --red-border: rgba(240,107,107,0.35);
+    --amber: #f5c542;
+    --text: #f0ecff;
+    --text-muted: rgba(240,236,255,0.5);
+    --text-dim: rgba(240,236,255,0.3);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -40%;
+    left: -20%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(ellipse, rgba(100,60,200,0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(155,127,232,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 640px;
+    padding: 1.5rem;
+  }
+
+  .screen { display: none; animation: fadeUp 0.35s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(16px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* ── START SCREEN ── */
+  #start-screen { text-align: center; }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    margin-bottom: 2rem;
+  }
+  .logo-badge span { width:6px;height:6px;background:var(--accent);border-radius:50%;display:inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  #start-screen h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 8vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #start-screen p {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .topic-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+  }
+  .chip {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.04em;
+    border: 1px solid;
+  }
+  .chip-purple { background: rgba(155,127,232,0.12); border-color: rgba(155,127,232,0.3); color: var(--accent-light); }
+  .chip-green  { background: rgba(76,223,138,0.10);  border-color: rgba(76,223,138,0.25);  color: #7eeeab; }
+  .chip-amber  { background: rgba(245,197,66,0.10);  border-color: rgba(245,197,66,0.25);  color: #f8d97a; }
+  .chip-blue   { background: rgba(96,165,250,0.10);  border-color: rgba(96,165,250,0.25);  color: #93c5fd; }
+
+  .start-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px 40px;
+    font-size: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 0 32px var(--accent-glow);
+    letter-spacing: 0.02em;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 0 48px rgba(155,127,232,0.4); }
+  .start-btn:active { transform: scale(0.97); }
+  .start-btn svg { transition: transform 0.2s; }
+  .start-btn:hover svg { transform: translateX(3px); }
+
+  .meta-row {
+    margin-top: 1rem;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* ── QUESTION SCREEN ── */
+  #question-screen {}
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .q-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .score-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-light);
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .timer-track {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 1s linear, background 0.5s;
+  }
+  .timer-fill.danger { background: var(--red); }
+  .timer-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    min-width: 30px;
+    text-align: right;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+  .timer-num.danger { color: var(--red); }
+
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .q-card p {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .ans-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px 14px 12px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.4;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .ans-btn:hover:not(:disabled) {
+    background: var(--surface2);
+    border-color: rgba(155,127,232,0.4);
+    transform: translateY(-1px);
+  }
+  .ans-btn:disabled { cursor: default; transform: none; }
+
+  .ans-letter {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .ans-btn.correct {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+  }
+  .ans-btn.correct .ans-letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0e0c1a;
+  }
+  .ans-btn.wrong {
+    background: var(--red-bg);
+    border-color: var(--red-border);
+  }
+  .ans-btn.wrong .ans-letter {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+  .ans-btn.reveal-correct {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+  }
+  .ans-btn.reveal-correct .ans-letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0e0c1a;
+  }
+
+  .feedback-bar {
+    border-radius: var(--radius-sm);
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    display: none;
+    margin-bottom: 0.75rem;
+  }
+  .feedback-bar.correct { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); display: block; }
+  .feedback-bar.wrong   { background: var(--red-bg);   border: 1px solid var(--red-border);   color: var(--red);   display: block; }
+
+  .next-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid rgba(155,127,232,0.4);
+    background: rgba(155,127,232,0.1);
+    color: var(--accent-light);
+    display: none;
+    transition: background 0.15s;
+  }
+  .next-btn:hover { background: rgba(155,127,232,0.2); }
+
+  /* ── END SCREEN ── */
+  #end-screen { text-align: center; }
+
+  .end-emoji { font-size: 52px; margin-bottom: 1rem; display: block; }
+  #end-screen h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .grade-msg { color: var(--text-muted); font-size: 15px; margin-bottom: 1.75rem; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .big-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--accent-light);
+    line-height: 1;
+  }
+  .big-score-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .stats {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .stat-row span:last-child { font-weight: 500; color: var(--text); }
+
+  .restart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--accent-light);
+    border: 1px solid rgba(155,127,232,0.35);
+    border-radius: var(--radius);
+    padding: 13px 36px;
+    font-size: 15px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+  .restart-btn:hover { background: rgba(155,127,232,0.1); transform: translateY(-1px); }
+
+  @media(max-width:480px){
+    .answers-grid { grid-template-columns: 1fr; }
+    #start-screen h1 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- START -->
+  <div id="start-screen" class="screen active">
+    <div class="logo-badge"><span></span> World History</div>
+    <h1>History<br/>Review</h1>
+    <p>Test your knowledge of ancient empires, world religions, key rulers, and medieval Europe.</p>
+    <div class="topic-chips">
+      <span class="chip chip-purple">Ancient Empires</span>
+      <span class="chip chip-green">World Religions</span>
+      <span class="chip chip-amber">Key Rulers</span>
+      <span class="chip chip-blue">Medieval Europe</span>
+    </div>
+    <button class="start-btn" onclick="startGame()">
+      Start Game
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="meta-row">20 questions &nbsp;·&nbsp; 15 seconds each &nbsp;·&nbsp; Speed bonus points</p>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="question-screen" class="screen">
+    <div class="hud">
+      <span class="q-label" id="q-counter">Question 1 / 20</span>
+      <span class="score-pill">⚡ <span id="score-display">0</span></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="timer-row">
+      <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+      <span class="timer-num" id="timer-num">15</span>
+    </div>
+    <div class="q-card"><p id="q-text"></p></div>
+    <div class="answers-grid" id="answers-grid"></div>
+    <div class="feedback-bar" id="feedback-bar"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next question →</button>
+  </div>
+
+  <!-- END -->
+  <div id="end-screen" class="screen">
+    <span class="end-emoji" id="end-emoji">🏆</span>
+    <h2 id="end-title">Game Over!</h2>
+    <p class="grade-msg" id="grade-msg"></p>
+    <div class="result-card">
+      <div class="big-score" id="final-score-num">0</div>
+      <div class="big-score-label">total points</div>
+      <div class="stats">
+        <div class="stat-row"><span>Correct answers</span><span id="stat-correct">0 / 20</span></div>
+        <div class="stat-row"><span>Questions answered</span><span>20</span></div>
+        <div class="stat-row"><span>Accuracy</span><span id="stat-acc">0%</span></div>
+      </div>
+    </div>
+    <button class="restart-btn" onclick="restartGame()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.2-3.6M2 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Play Again
+    </button>
+  </div>
+
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {q:"What year did the Byzantine Empire fall to the Turks?", a:["1066","1215","1453","1337"], correct:2},
+  {q:"Who split the Roman Empire into East and West in 284 AD?", a:["Constantine","Diocletian","Marcus Aurelius","Theodosius"], correct:1},
+  {q:"Which empire was the first to unite much of India?", a:["Gupta Empire","Mughal Empire","Han Dynasty","Mauryan Empire"], correct:3},
+  {q:"Who was the last ruler of the Pax Romana?", a:["Constantine","Diocletian","Theodosius","Marcus Aurelius"], correct:3},
+  {q:"The Five Pillars of Islam require Muslims to fast during which month?", a:["Sha'ban","Ramadan","Muharram","Dhul Hijjah"], correct:1},
+  {q:"Who created the Gupta Empire by marrying into an influential family?", a:["Asoka","Chandragupta Maurya","Chandra Gupta I","Akbar"], correct:2},
+  {q:"What African group was the first to smelt iron?", a:["Olmec","Sahel people","Bedouin","Nok"], correct:3},
+  {q:"Approximately how long did the Han Dynasty rule China?", a:["200 years","100 years","400 years","600 years"], correct:2},
+  {q:"What does 'Islam' mean?", a:["Praise to Allah","Peace and harmony","Submission to the will of Allah","One true faith"], correct:2},
+  {q:"Who was Muhammad's wife and a businesswoman?", a:["Fatima","Aisha","Maryam","Khadijah"], correct:3},
+  {q:"The Justinian Code was created by which Byzantine emperor?", a:["Constantine","Theodosius","Heraclius","Justinian"], correct:3},
+  {q:"What caused the Jewish Diaspora?", a:["Roman conquest in 70 AD","The Second Jewish Rebellion in 132 AD","The fall of Jerusalem in 587 BC","The Babylonian Captivity"], correct:1},
+  {q:"Which Roman Emperor made Christianity the official religion in 380 AD?", a:["Constantine","Diocletian","Marcus Aurelius","Theodosius"], correct:3},
+  {q:"Feudalism is best described as:", a:["A trade system between merchants","A religious law code","Lords granting land to vassals in exchange for service","A system of elected government"], correct:2},
+  {q:"What document did King John 'Softsword' sign giving nobles rights?", a:["Petition of Rights","English Bill of Rights","Magna Carta","Edict of Nantes"], correct:2},
+  {q:"The Mongol leader who conquered much of Central Asia was:", a:["Kublai Khan","Attila","Timur the Lame","Genghis Khan"], correct:3},
+  {q:"The Sunni and Shi'a split in Islam was primarily about:", a:["Whether prayer was required","Different interpretations of the Qur'an","Who should succeed Muhammad as leader","Where the capital should be located"], correct:2},
+  {q:"Which invention by Johann Gutenberg helped spread Reformation ideas?", a:["The compass","The telescope","Gunpowder","The printing press"], correct:3},
+  {q:"What was the Bubonic Plague's approximate death toll in Europe?", a:["One tenth","One quarter","One half","One third"], correct:3},
+  {q:"Charlemagne was crowned Roman Emperor after he:", a:["Won the Battle of Tours","Crushed a mob threatening the pope","Converted to Christianity","Defeated the Saxons"], correct:1},
+  {q:"Which explorer reached India by sailing around the tip of Africa?", a:["Christopher Columbus","Amerigo Vespucci","Vasco de Gama","Prince Henry"], correct:2},
+  {q:"Ivan III declared independence from the Mongols and named himself:", a:["Emperor","Sultan","Czar","Shogun"], correct:2},
+  {q:"The Three-Field System helped medieval farmers by:", a:["Irrigating dry land","Letting one field lie fallow each year","Planting three crops at once","Trading surplus grain"], correct:1},
+  {q:"Martin Luther sparked the Reformation by:", a:["Translating the Bible into German","Posting 95 theses on a castle door","Refusing to pay indulgences","Fleeing to Switzerland"], correct:1},
+  {q:"What did Akbar do for the Mughal Empire?", a:["Conquered Constantinople","Built the Taj Mahal","Made it tolerant of other beliefs and cultures","Started trade with Europe"], correct:2},
+  {q:"Which emperor reunited Rome, moved the capital and approved Christianity?", a:["Theodosius","Diocletian","Marcus Aurelius","Constantine"], correct:3},
+  {q:"Asoka turned to Buddhism after:", a:["Winning the Battle of Kalinga","Killing 300 people in war","Being exiled from India","Defeating Seleucus I"], correct:1},
+  {q:"The Huns were originally from:", a:["Northern Europe","Arabia","Central Asia","Eastern Africa"], correct:2},
+  {q:"What does the Qur'an represent in Islam?", a:["A collection of laws","Muhammad's biography","The holy book of Muslims","A record of conquests"], correct:2},
+  {q:"The Magna Carta established which important principle?", a:["Religious freedom for all","Divine right of kings","No taxation without representation","Free trade between nations"], correct:2},
+];
+
+const LETTERS = ['A','B','C','D'];
+let questions=[], current=0, score=0, correct=0, timeLeft=15, timer=null, answered=false;
+
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function startGame(){
+  questions = shuffle(ALL_QUESTIONS).slice(0,20);
+  current=0; score=0; correct=0; answered=false;
+  show('question-screen');
+  loadQuestion();
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function loadQuestion(){
+  answered=false; timeLeft=15;
+  const q=questions[current];
+  document.getElementById('q-counter').textContent=`Question ${current+1} / 20`;
+  document.getElementById('score-display').textContent=score.toLocaleString();
+  document.getElementById('prog-fill').style.width=(current/20*100)+'%';
+  document.getElementById('q-text').textContent=q.q;
+  const fb=document.getElementById('feedback-bar');
+  fb.className='feedback-bar'; fb.textContent='';
+  document.getElementById('next-btn').style.display='none';
+  const tn=document.getElementById('timer-num');
+  tn.textContent=15; tn.className='timer-num';
+  const tf=document.getElementById('timer-fill');
+  tf.style.width='100%'; tf.className='timer-fill';
+
+  const grid=document.getElementById('answers-grid');
+  grid.innerHTML='';
+  q.a.forEach((ans,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn';
+    btn.innerHTML=`<span class="ans-letter">${LETTERS[i]}</span><span>${ans}</span>`;
+    btn.onclick=()=>selectAnswer(i);
+    grid.appendChild(btn);
+  });
+
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timer-num').textContent=timeLeft;
+    document.getElementById('timer-fill').style.width=(timeLeft/15*100)+'%';
+    if(timeLeft<=5){
+      document.getElementById('timer-num').className='timer-num danger';
+      document.getElementById('timer-fill').className='timer-fill danger';
+    }
+    if(timeLeft<=0){ clearInterval(timer); timeUp(); }
+  },1000);
+}
+
+function selectAnswer(chosen){
+  if(answered) return;
+  answered=true; clearInterval(timer);
+  const q=questions[current];
+  const btns=document.querySelectorAll('.ans-btn');
+  btns.forEach(b=>b.disabled=true);
+  if(chosen===q.correct){
+    btns[chosen].classList.add('correct');
+    const pts=Math.max(100,Math.round(timeLeft/15*500));
+    score+=pts; correct++;
+    const fb=document.getElementById('feedback-bar');
+    fb.className='feedback-bar correct';
+    fb.textContent=`Correct! +${pts} points`;
+  } else {
+    btns[chosen].classList.add('wrong');
+    btns[q.correct].classList.add('reveal-correct');
+    const fb=document.getElementById('feedback-bar');
+    fb.className='feedback-bar wrong';
+    fb.textContent=`Incorrect. The answer was: ${q.a[q.correct]}`;
+  }
+  document.getElementById('next-btn').style.display='block';
+}
+
+function timeUp(){
+  if(answered) return;
+  answered=true;
+  const q=questions[current];
+  const btns=document.querySelectorAll('.ans-btn');
+  btns.forEach(b=>b.disabled=true);
+  btns[q.correct].classList.add('reveal-correct');
+  const fb=document.getElementById('feedback-bar');
+  fb.className='feedback-bar wrong';
+  fb.textContent=`Time's up! Answer: ${q.a[q.correct]}`;
+  document.getElementById('next-btn').style.display='block';
+}
+
+function nextQuestion(){
+  current++;
+  if(current>=20){ endGame(); return; }
+  loadQuestion();
+}
+
+function endGame(){
+  clearInterval(timer);
+  document.getElementById('prog-fill').style.width='100%';
+  const pct=Math.round(correct/20*100);
+  document.getElementById('final-score-num').textContent=score.toLocaleString();
+  document.getElementById('stat-correct').textContent=`${correct} / 20`;
+  document.getElementById('stat-acc').textContent=pct+'%';
+  let emoji='📚',title='Keep Studying!',msg='Review your notes and give it another shot.';
+  if(pct>=90){emoji='🏆';title='History Master!';msg='Outstanding — you really know your stuff.';}
+  else if(pct>=75){emoji='🎉';title='Great Job!';msg='Solid performance. A little more review and you\'ll ace it.';}
+  else if(pct>=60){emoji='📖';title='Not Bad!';msg='Good foundation — keep studying the tricky parts.';}
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('grade-msg').textContent=msg;
+  show('end-screen');
+}
+
+function restartGame(){ show('start-screen'); }
+</script>
+</body>
+</html>
