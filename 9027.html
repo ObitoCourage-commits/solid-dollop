@@ -43,7 +43,7 @@
             EJS_gameName = "Final Fantasy 1 + 2 - Dawn of Souls";
             EJS_color = "#0064ff";
             EJS_startOnLoaded = true;
-            EJS_pathtodata = "https://cdn.jsdelivr.net/gh/a456pur/seraph@81f551ca0aa8e3d6018d32d8ac5904ac9bc78f76/storage/emulatorjs/data";
+            EJS_pathtodata = "https://raw.githubusercontent.com/ObitoCourage-commits/reimagined-memory/main/data/";
             EJS_gameUrl = "https://raw.githubusercontent.com/ObitoCourage-commits/html/main/Final%20Fantasy%201%20%2B%202%20-%20Dawn%20of%20Souls/Final%20Fantasy%201%20%2B%202%20-%20Dawn%20of%20Souls%20%23%20GBA.GBA";
             EJS_biosUrl = "https://raw.githubusercontent.com/ObitoCourage-commits/html/main/Spongebob%20Battle%20for%20Bikini%20Bottom/gba_bios.bin";
             loadGame();
@@ -51,7 +51,7 @@
         document.getElementById("startButton").addEventListener("click", startGame);
         function loadGame() {
             var script = document.createElement("script");
-            script.src = "https://unpkg.com/emulatorjs@4.0.9/data/loader.js";
+            script.src = "https://raw.githubusercontent.com/ObitoCourage-commits/reimagined-memory/main/data/loader.js";
             document.body.appendChild(script);
         }
     </script>
